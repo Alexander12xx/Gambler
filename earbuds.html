@@ -1,0 +1,910 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gambler - Premium Electronics & Accessories</title>
+<script src="https://cdn.tailwindcss.com/3.4.16"></script>
+<script>tailwind.config={theme:{extend:{colors:{primary:'#3B82F6',secondary:'#10B981'},borderRadius:{'none':'0px','sm':'4px',DEFAULT:'8px','md':'12px','lg':'16px','xl':'20px','2xl':'24px','3xl':'32px','full':'9999px','button':'8px'}}}}</script>
+<style>
+.admin-modal {
+display: none;
+position: fixed;
+top: 50%;
+left: 50%;
+transform: translate(-50%, -50%);
+z-index: 1000;
+}
+.delete-product {
+opacity: 0;
+transition: opacity 0.3s ease;
+}
+.admin-mode .delete-product {
+opacity: 1;
+}
+.admin-overlay {
+display: none;
+position: fixed;
+top: 0;
+left: 0;
+right: 0;
+bottom: 0;
+background: rgba(0, 0, 0, 0.5);
+z-index: 999;
+}
+.admin-dashboard {
+display: none;
+position: fixed;
+top: 0;
+right: 0;
+width: 100%;
+max-width: 500px;
+height: 100vh;
+background: white;
+z-index: 1000;
+overflow-y: auto;
+}
+</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.6.0/remixicon.min.css">
+<style>
+:where([class^="ri-"])::before { content: "\f3c2"; }
+body {
+font-family: 'Inter', sans-serif;
+overflow-x: hidden;
+}
+.hero-slide {
+transition: transform 0.5s ease;
+}
+.product-card {
+transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.product-card:hover {
+transform: translateY(-5px);
+box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+.whatsapp-btn {
+transition: all 0.3s ease;
+}
+.whatsapp-btn:hover {
+transform: scale(1.05);
+}
+.category-item img {
+transition: transform 0.3s ease;
+}
+.category-item:hover img {
+transform: scale(1.1);
+}
+.menu-item {
+position: relative;
+}
+.menu-item::after {
+content: '';
+position: absolute;
+bottom: -2px;
+left: 0;
+width: 0;
+height: 2px;
+background-color: #3B82F6;
+transition: width 0.3s ease;
+}
+.menu-item:hover::after {
+width: 100%;
+}
+@media (max-width: 768px) {
+.desktop-menu {
+display: none;
+}
+}
+@media (min-width: 769px) {
+.mobile-menu-btn, .mobile-menu {
+display: none;
+}
+}
+.mobile-menu {
+transform: translateX(-100%);
+transition: transform 0.3s ease;
+}
+.mobile-menu.open {
+transform: translateX(0);
+}
+.cart-count {
+animation: pulse 1.5s infinite;
+}
+@keyframes pulse {
+0% { transform: scale(1); }
+50% { transform: scale(1.1); }
+100% { transform: scale(1); }
+}
+.featured-tag {
+animation: fadeInOut 2s infinite;
+}
+@keyframes fadeInOut {
+0% { opacity: 0.7; }
+50% { opacity: 1; }
+100% { opacity: 0.7; }
+}
+</style>
+</head>
+<body class="bg-gray-50">
+<!-- Header - Desktop & Mobile -->
+<header class="fixed top-0 w-full bg-white shadow-md z-50">
+<div class="container mx-auto px-4">
+<!-- Desktop Header -->
+<div class="hidden md:flex items-center justify-between h-16">
+<div class="flex items-center">
+<a href="#index.html" class="font-['Pacifico'] text-primary text-2xl">Gambler</a>
+<nav class="ml-10 desktop-menu">
+<ul class="flex space-x-8">
+<li><a href="#index.html" class="menu-item text-gray-700 hover:text-primary font-medium">Home</a></li>
+<li><a href="#products" class="menu-item text-gray-700 hover:text-primary font-medium">Products</a></li>
+<li><a href="#categories" class="menu-item text-gray-700 hover:text-primary font-medium">Categories</a></li>
+<li><a href="#deals" class="menu-item text-gray-700 hover:text-primary font-medium">Deals</a></li>
+<li><a href="#about" class="menu-item text-gray-700 hover:text-primary font-medium">About</a></li>
+</ul>
+</nav>
+</div>
+<div class="flex items-center space-x-4">
+<div class="relative">
+<input type="text" placeholder="Search products..." class="w-64 pl-10 pr-4 py-2 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+<div class="absolute left-3 top-2.5 w-5 h-5 flex items-center justify-center text-gray-400">
+<i class="ri-search-line"></i>
+</div>
+</div>
+<button onclick="openAdminModal()" class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition-colors">
+<i class="ri-admin-line text-gray-700"></i>
+</button>
+<a href="#cart" class="relative cursor-pointer">
+<div class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center">
+<i class="ri-shopping-cart-2-line text-gray-700"></i>
+</div>
+<span class="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-primary text-white text-xs flex items-center justify-center cart-count">3</span>
+</a>
+<a href="https://wa.me/+254710195613" target="_blank" class="cursor-pointer">
+<div class="w-10 h-10 rounded-full bg-green-500 flex items-center justify-center">
+<i class="ri-whatsapp-line text-white"></i>
+</div>
+</a>
+</div>
+</div>
+<!-- Mobile Header -->
+<div class="flex md:hidden items-center justify-between h-14">
+<button class="mobile-menu-btn w-10 h-10 flex items-center justify-center cursor-pointer">
+<i class="ri-menu-line text-xl"></i>
+</button>
+<a href="#index.htm" class="font-['Pacifico'] text-primary text-xl">Gambler</a>
+<div class="flex items-center space-x-2">
+<button class="search-toggle w-10 h-10 flex items-center justify-center cursor-pointer">
+<i class="ri-search-line text-lg"></i>
+</button>
+<a href="#cart" class="relative cursor-pointer">
+<div class="w-10 h-10 flex items-center justify-center">
+<i class="ri-shopping-cart-2-line text-lg"></i>
+</div>
+<span class="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-primary text-white text-xs flex items-center justify-center cart-count">3</span>
+</a>
+</div>
+</div>
+<!-- Mobile Search Bar (Hidden by default) -->
+<div class="mobile-search hidden md:hidden py-2 pb-3">
+<div class="relative">
+<input type="text" placeholder="Search products..." class="w-full pl-10 pr-4 py-2 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+<div class="absolute left-3 top-2.5 w-5 h-5 flex items-center justify-center text-gray-400">
+<i class="ri-search-line"></i>
+</div>
+</div>
+</div>
+</div>
+</header>
+<!-- Mobile Menu Sidebar -->
+<div class="mobile-menu fixed top-0 left-0 h-full w-3/4 max-w-xs bg-white z-50 shadow-xl">
+<div class="p-4 border-b">
+<div class="flex items-center justify-between">
+<span class="font-['Pacifico'] text-primary text-xl">Gambler</span>
+<button class="close-menu-btn w-10 h-10 flex items-center justify-center cursor-pointer">
+<i class="ri-close-line text-xl"></i>
+</button>
+</div>
+</div>
+<nav class="p-4">
+<ul class="space-y-4">
+<li><a href="#index.html" class="block py-2 text-gray-700 hover:text-primary font-medium">Home</a></li>
+<li><a href="#products" class="block py-2 text-gray-700 hover:text-primary font-medium">Products</a></li>
+<li><a href="#categories" class="block py-2 text-gray-700 hover:text-primary font-medium">Categories</a></li>
+<li><a href="#deals" class="block py-2 text-gray-700 hover:text-primary font-medium">Deals</a></li>
+<li><a href="#about" class="block py-2 text-gray-700 hover:text-primary font-medium">About</a></li>
+  <li><button onclick="openAdminModal()" class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition-colors">
+<i class="ri-admin-line text-gray-700"></i>
+</button></li>
+</ul>
+</nav>
+<div class="absolute bottom-0 w-full p-4 border-t">
+<a href="https://wa.me/+254710195613" target="_blank" class="flex items-center justify-center space-x-2 py-3 bg-green-500 text-white rounded-button cursor-pointer">
+<i class="ri-whatsapp-line"></i>
+<span>Contact via WhatsApp</span>
+</a>
+</div>
+</div>
+<!-- Overlay for Mobile Menu -->
+<div class="menu-overlay fixed inset-0 bg-black bg-opacity-50 z-40 hidden"></div>
+<main class="pt-16 md:pt-16">
+
+<!-- Categories Section -->
+<section id="categories" class="py-10 px-4">
+<div class="container mx-auto">
+<h2 class="text-2xl font-bold mb-6">Shop by Category</h2>
+<div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+<a href="speakers.html" class="category-item bg-white rounded-lg shadow-sm overflow-hidden text-center cursor-pointer">
+<div class="h-20 w-20 mx-auto mt-4 mb-2 rounded-full bg-gray-100 overflow-hidden">
+<img src="https://readdy.ai/api/search-image?query=icon%2C%203D%20cartoon%2C%20Gaming%20headset%20with%20microphone%2C%20the%20icon%20should%20take%20up%2070%25%20of%20the%20frame%2C%20vibrant%20colors%20with%20soft%20gradients%2C%20minimalist%20design%2C%20smooth%20rounded%20shapes%2C%20subtle%20shading%2C%20no%20outlines%2C%20centered%20composition%2C%20isolated%20on%20white%20background%2C%20playful%20and%20friendly%20aesthetic%2C%20isometric%20perspective%2C%20high%20detail%20quality%2C%20clean%20and%20modern%20look%2C%20single%20object%20focus&width=100&height=100&seq=4&orientation=squarish" alt="Headphones" class="w-full h-full object-cover">
+</div>
+<p class="font-medium text-sm mb-4">Headphones</p>
+</a>
+<a href="keyboards.html" class="category-item bg-white rounded-lg shadow-sm overflow-hidden text-center cursor-pointer">
+<div class="h-20 w-20 mx-auto mt-4 mb-2 rounded-full bg-gray-100 overflow-hidden">
+<img src="https://readdy.ai/api/search-image?query=icon%2C%203D%20cartoon%2C%20Gaming%20keyboard%20with%20RGB%20lighting%2C%20the%20icon%20should%20take%20up%2070%25%20of%20the%20frame%2C%20vibrant%20colors%20with%20soft%20gradients%2C%20minimalist%20design%2C%20smooth%20rounded%20shapes%2C%20subtle%20shading%2C%20no%20outlines%2C%20centered%20composition%2C%20isolated%20on%20white%20background%2C%20playful%20and%20friendly%20aesthetic%2C%20isometric%20perspective%2C%20high%20detail%20quality%2C%20clean%20and%20modern%20look%2C%20single%20object%20focus&width=100&height=100&seq=5&orientation=squarish" alt="Keyboards" class="w-full h-full object-cover">
+</div>
+<p class="font-medium text-sm mb-4">Keyboards</p>
+</a>
+<a href="mice.html" class="category-item bg-white rounded-lg shadow-sm overflow-hidden text-center cursor-pointer">
+<div class="h-20 w-20 mx-auto mt-4 mb-2 rounded-full bg-gray-100 overflow-hidden">
+<img src="https://readdy.ai/api/search-image?query=icon%2C%203D%20cartoon%2C%20Gaming%20mouse%20with%20RGB%20lighting%2C%20the%20icon%20should%20take%20up%2070%25%20of%20the%20frame%2C%20vibrant%20colors%20with%20soft%20gradients%2C%20minimalist%20design%2C%20smooth%20rounded%20shapes%2C%20subtle%20shading%2C%20no%20outlines%2C%20centered%20composition%2C%20isolated%20on%20white%20background%2C%20playful%20and%20friendly%20aesthetic%2C%20isometric%20perspective%2C%20high%20detail%20quality%2C%20clean%20and%20modern%20look%2C%20single%20object%20focus&width=100&height=100&seq=6&orientation=squarish" alt="Mice" class="w-full h-full object-cover">
+</div>
+<p class="font-medium text-sm mb-4">Mice</p>
+</a>
+<a href="phone cases.html" class="category-item bg-white rounded-lg shadow-sm overflow-hidden text-center cursor-pointer">
+<div class="h-20 w-20 mx-auto mt-4 mb-2 rounded-full bg-gray-100 overflow-hidden">
+<img src="https://readdy.ai/api/search-image?query=icon%2C%203D%20cartoon%2C%20Smartphone%20with%20protective%20case%2C%20the%20icon%20should%20take%20up%2070%25%20of%20the%20frame%2C%20vibrant%20colors%20with%20soft%20gradients%2C%20minimalist%20design%2C%20smooth%20rounded%20shapes%2C%20subtle%20shading%2C%20no%20outlines%2C%20centered%20composition%2C%20isolated%20on%20white%20background%2C%20playful%20and%20friendly%20aesthetic%2C%20isometric%20perspective%2C%20high%20detail%20quality%2C%20clean%20and%20modern%20look%2C%20single%20object%20focus&width=100&height=100&seq=7&orientation=squarish" alt="Phone Cases" class="w-full h-full object-cover">
+</div>
+<p class="font-medium text-sm mb-4">Phone Cases</p>
+</a>
+<a href="earbuds.html" class="category-item bg-white rounded-lg shadow-sm overflow-hidden text-center cursor-pointer">
+<div class="h-20 w-20 mx-auto mt-4 mb-2 rounded-full bg-gray-100 overflow-hidden">
+<img src="https://readdy.ai/api/search-image?query=icon%2C%203D%20cartoon%2C%20Wireless%20earbuds%20with%20charging%20case%2C%20the%20icon%20should%20take%20up%2070%25%20of%20the%20frame%2C%20vibrant%20colors%20with%20soft%20gradients%2C%20minimalist%20design%2C%20smooth%20rounded%20shapes%2C%20subtle%20shading%2C%20no%20outlines%2C%20centered%20composition%2C%20isolated%20on%20white%20background%2C%20playful%20and%20friendly%20aesthetic%2C%20isometric%20perspective%2C%20high%20detail%20quality%2C%20clean%20and%20modern%20look%2C%20single%20object%20focus&width=100&height=100&seq=8&orientation=squarish" alt="Earbuds" class="w-full h-full object-cover">
+</div>
+<p class="font-medium text-sm mb-4">Earbuds</p>
+</a>
+<a href="chargers.html" class="category-item bg-white rounded-lg shadow-sm overflow-hidden text-center cursor-pointer">
+<div class="h-20 w-20 mx-auto mt-4 mb-2 rounded-full bg-gray-100 overflow-hidden">
+<img src="https://readdy.ai/api/search-image?query=icon%2C%203D%20cartoon%2C%20Power%20bank%20or%20portable%20charger%2C%20the%20icon%20should%20take%20up%2070%25%20of%20the%20frame%2C%20vibrant%20colors%20with%20soft%20gradients%2C%20minimalist%20design%2C%20smooth%20rounded%20shapes%2C%20subtle%20shading%2C%20no%20outlines%2C%20centered%20composition%2C%20isolated%20on%20white%20background%2C%20playful%20and%20friendly%20aesthetic%2C%20isometric%20perspective%2C%20high%20detail%20quality%2C%20clean%20and%20modern%20look%2C%20single%20object%20focus&width=100&height=100&seq=9&orientation=squarish" alt="Chargers" class="w-full h-full object-cover">
+</div>
+<p class="font-medium text-sm mb-4">Chargers</p>
+</a>
+</div>
+</div>
+</section>
+<!-- Featured Products -->
+<section id="deals" class="py-8 px-4 bg-gradient-to-r from-blue-50 to-indigo-50">
+<div class="container mx-auto">
+<div class="flex justify-between items-center mb-6">
+<h2 class="text-2xl font-bold">Earbuds</h2>
+<a href="#products" class="text-primary font-medium flex items-center cursor-pointer">
+<span>View All</span>
+<i class="ri-arrow-right-line ml-1"></i>
+</a>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+<div class="bg-white rounded-lg shadow-md overflow-hidden">
+<div class="relative">
+<img src="images/oraimo-removebg-preview.png" alt="Gaming Headset" class="w-full h-48 object-cover">
+<span class="absolute top-3 left-3 bg-primary text-white text-xs font-bold px-2 py-1 rounded-full featured-tag">60% OFF</span>
+</div>
+<div class="p-4">
+<h3 class="font-bold text-lg mb-1">Oraimo earbuds</h3>
+<p class="text-gray-600 text-sm mb-2">Soft quality Sound</p>
+<div class="flex items-center mb-3">
+<span class="text-lg font-bold text-primary">KSH.600</span>
+<span class="text-gray-400 line-through text-sm ml-2">KSH.1250</span>
+</div>
+<div class="flex items-center justify-between">
+<div class="flex">
+<i class="ri-star-fill text-yellow-400"></i>
+<i class="ri-star-fill text-yellow-400"></i>
+<i class="ri-star-fill text-yellow-400"></i>
+<i class="ri-star-fill text-yellow-400"></i>
+<i class="ri-star-half-fill text-yellow-400"></i>
+<span class="text-xs text-gray-500 ml-1">(130)</span>
+</div>
+<a href="https://wa.me/+254710195613?text=I'm%20interested%20in%20the%20Oraimo%20earbuds%20for%20KSH.600" target="_blank" class="whatsapp-btn w-10 h-10 rounded-full bg-green-500 flex items-center justify-center cursor-pointer">
+<i class="ri-whatsapp-line text-white"></i>
+</a>
+</div>
+</div>
+</div>
+<div class="bg-white rounded-lg shadow-md overflow-hidden">
+<div class="relative">
+<img src="images/WhatsApp Image 2025-05-04 at 20.47.50.jpeg" alt="Mechanical Keyboard" class="w-full h-48 object-cover">
+<span class="absolute top-3 left-3 bg-primary text-white text-xs font-bold px-2 py-1 rounded-full featured-tag">NEW DEAL</span>
+</div>
+<div class="p-4">
+<h3 class="font-bold text-lg mb-1">Oraimo pro+</h3>
+<p class="text-gray-600 text-sm mb-2">Modern design</p>
+<div class="flex items-center mb-3">
+<span class="text-lg font-bold text-primary">KSH.600</span>
+</div>
+<div class="flex items-center justify-between">
+<div class="flex">
+<i class="ri-star-fill text-yellow-400"></i>
+<i class="ri-star-fill text-yellow-400"></i>
+<i class="ri-star-fill text-yellow-400"></i>
+<i class="ri-star-fill text-yellow-400"></i>
+<i class="ri-star-line text-yellow-400"></i>
+<span class="text-xs text-gray-500 ml-1">(114)</span>
+</div>
+<a href="https://wa.me/+254710195613?text=I'm%20interested%20in%20the%20Oraimo%20PRO+%20for%20KSH.600" target="_blank" class="whatsapp-btn w-10 h-10 rounded-full bg-green-500 flex items-center justify-center cursor-pointer">
+<i class="ri-whatsapp-line text-white"></i>
+</a>
+</div>
+</div>
+</div>
+<div class="bg-white rounded-lg shadow-md overflow-hidden">
+<div class="relative">
+<img src="https://readdy.ai/api/search-image?query=professional%20product%20photography%20of%20premium%20wireless%20earbuds%20with%20charging%20case%20on%20a%20dark%20background%2C%20premium%20quality%2C%20detailed%20texture%2C%20perfect%20lighting%2C%20advertisement%20quality%2C%20isolated%20product%2C%20studio%20lighting%2C%20high%20resolution%2C%20marketing%20material&width=400&height=300&seq=12&orientation=landscape" alt="Wireless Earbuds" class="w-full h-48 object-cover">
+<span class="absolute top-3 left-3 bg-primary text-white text-xs font-bold px-2 py-1 rounded-full featured-tag">HOT</span>
+</div>
+<div class="p-4">
+<h3 class="font-bold text-lg mb-1">TrueSound Pro Earbuds</h3>
+<p class="text-gray-600 text-sm mb-2">Noise Cancelling, Waterproof</p>
+<div class="flex items-center mb-3">
+<span class="text-lg font-bold text-primary">KSH.3000</span>
+<span class="text-gray-400 line-through text-sm ml-2">KSH.3500</span>
+</div>
+<div class="flex items-center justify-between">
+<div class="flex">
+<i class="ri-star-fill text-yellow-400"></i>
+<i class="ri-star-fill text-yellow-400"></i>
+<i class="ri-star-fill text-yellow-400"></i>
+<i class="ri-star-fill text-yellow-400"></i>
+<i class="ri-star-fill text-yellow-400"></i>
+<span class="text-xs text-gray-500 ml-1">(217)</span>
+</div>
+<a href="https://wa.me/+254710195613?text=I'm%20interested%20in%20the%20TrueSound%20Pro%20Earbuds%20for%20KSH.3000" target="_blank" class="whatsapp-btn w-10 h-10 rounded-full bg-green-500 flex items-center justify-center cursor-pointer">
+<i class="ri-whatsapp-line text-white"></i>
+</a>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+
+
+<!-- Why Choose Us -->
+<section class="py-10 px-4 bg-white">
+<div class="container mx-auto">
+<h2 class="text-2xl font-bold mb-8 text-center">Why Choose G-Electronics</h2>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<div class="flex flex-col items-center text-center p-6 rounded-lg">
+<div class="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center mb-4">
+<i class="ri-shield-check-line text-2xl text-primary"></i>
+</div>
+<h3 class="font-bold text-lg mb-2">Quality Products</h3>
+<p class="text-gray-600">We source only the highest quality electronics and accessories from trusted manufacturers.</p>
+</div>
+<div class="flex flex-col items-center text-center p-6 rounded-lg">
+<div class="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mb-4">
+<i class="ri-customer-service-2-line text-2xl text-secondary"></i>
+</div>
+<h3 class="font-bold text-lg mb-2">Expert Support</h3>
+<p class="text-gray-600">Our team of tech experts is always ready to help you with product selection and support.</p>
+</div>
+<div class="flex flex-col items-center text-center p-6 rounded-lg">
+<div class="w-16 h-16 rounded-full bg-indigo-100 flex items-center justify-center mb-4">
+<i class="ri-truck-line text-2xl text-indigo-600"></i>
+</div>
+<h3 class="font-bold text-lg mb-2">Fast Delivery</h3>
+<p class="text-gray-600">We ensure quick processing and delivery of your orders to get your tech to you faster.</p>
+</div>
+</div>
+</div>
+</section>
+
+</main>
+<!-- Footer -->
+<footer class="bg-gray-900 text-white pt-10 pb-24 md:pb-10 px-4">
+<div class="container mx-auto">
+<div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+<div>
+<a href="#" class="font-['Pacifico'] text-2xl text-white mb-4 inline-block">G-Electronics</a>
+<p class="text-gray-400 text-sm">Your trusted source for premium electronics and accessories since 2020.</p>
+<p class="text-gray-400 text-sm">A product of ALTECH software developers.Reach out throurh our whatsapp number +254 706 389 206</p>
+
+
+<div class="flex space-x-4 mt-4">
+<a href="#" class="w-8 h-8 rounded-full bg-gray-800 flex items-center justify-center hover:bg-primary transition-colors cursor-pointer">
+<i class="ri-facebook-fill"></i>
+</a>
+<a href="#" class="w-8 h-8 rounded-full bg-gray-800 flex items-center justify-center hover:bg-primary transition-colors cursor-pointer">
+<i class="ri-instagram-line"></i>
+</a>
+<a href="#" class="w-8 h-8 rounded-full bg-gray-800 flex items-center justify-center hover:bg-primary transition-colors cursor-pointer">
+<i class="ri-twitter-x-line"></i>
+</a>
+<a href="#" class="w-8 h-8 rounded-full bg-gray-800 flex items-center justify-center hover:bg-primary transition-colors cursor-pointer">
+<i class="ri-youtube-line"></i>
+</a>
+</div>
+</div>
+<div>
+<h3 class="text-lg font-semibold mb-4">Quick Links</h3>
+<ul class="space-y-2 text-gray-400">
+<li><a href="#" class="hover:text-white transition-colors cursor-pointer">Home</a></li>
+<li><a href="#products" class="hover:text-white transition-colors cursor-pointer">Products</a></li>
+<li><a href="#deals" class="hover:text-white transition-colors cursor-pointer">Deals</a></li>
+<li><a href="#about" class="hover:text-white transition-colors cursor-pointer">About Us</a></li>
+<li><a href="#" class="hover:text-white transition-colors cursor-pointer">Contact</a></li>
+</ul>
+</div>
+<div>
+<h3 class="text-lg font-semibold mb-4">Categories</h3>
+<ul class="space-y-2 text-gray-400">
+<li><a href="#" class="hover:text-white transition-colors cursor-pointer">Gaming Accessories</a></li>
+<li><a href="#" class="hover:text-white transition-colors cursor-pointer">Audio Equipment</a></li>
+<li><a href="#" class="hover:text-white transition-colors cursor-pointer">Mobile Accessories</a></li>
+<li><a href="#" class="hover:text-white transition-colors cursor-pointer">Charging Solutions</a></li>
+<li><a href="#" class="hover:text-white transition-colors cursor-pointer">Laptop Accessories</a></li>
+</ul>
+</div>
+<div>
+<h3 class="text-lg font-semibold mb-4">Contact Us</h3>
+<ul class="space-y-3 text-gray-400">
+<li class="flex items-start">
+<i class="ri-map-pin-line mt-1 mr-2"></i>
+<span>123 Tech Street, Nairobi, Kenya</span>
+</li>
+<li class="flex items-center">
+<i class="ri-phone-line mr-2"></i>
+<span>+254 710 195 613</span>
+</li>
+<li class="flex items-center">
+<i class="ri-mail-line mr-2"></i>
+<span>info@gambler.com</span>
+</li>
+<li class="mt-4">
+<a href="https://wa.me/+254710195613" target="_blank" class="flex items-center space-x-2 bg-green-600 text-white py-2 px-4 rounded-button hover:bg-green-700 transition-colors cursor-pointer">
+<i class="ri-whatsapp-line"></i>
+<span>Chat with Us</span>
+</a>
+</li>
+</ul>
+</div>
+</div>
+<div class="border-t border-gray-800 mt-8 pt-6 flex flex-col md:flex-row justify-between items-center">
+<p class="text-gray-400 text-sm">© 2025 G-Electronics. All rights reserved.</p>
+<div class="flex space-x-4 mt-4 md:mt-0">
+<a href="#" class="text-gray-400 text-sm hover:text-white transition-colors cursor-pointer">Privacy Policy</a>
+<a href="#" class="text-gray-400 text-sm hover:text-white transition-colors cursor-pointer">Terms of Service</a>
+<a href="#" class="text-gray-400 text-sm hover:text-white transition-colors cursor-pointer">Shipping Info</a>
+</div>
+</div>
+</div>
+</footer>
+<!-- Admin Login Modal -->
+<div class="admin-modal bg-white rounded-lg p-6 w-[90%] max-w-md shadow-xl">
+<h2 class="text-xl font-bold mb-4">Admin Login</h2>
+<div class="mb-4">
+<input type="password" id="adminPassword" placeholder="Enter password" class="w-full px-4 py-2 border rounded-button focus:outline-none focus:ring-2 focus:ring-primary">
+</div>
+<div class="flex justify-end space-x-3">
+<button onclick="closeAdminModal()" class="px-4 py-2 text-gray-600 hover:text-gray-800 cursor-pointer">Cancel</button>
+<button onclick="validateAdminLogin()" class="px-4 py-2 bg-primary text-white rounded-button hover:bg-primary/90 cursor-pointer">Login</button>
+</div>
+</div>
+<!-- Admin Dashboard -->
+<div class="admin-dashboard shadow-lg bg-white">
+<style>
+.admin-dashboard {
+transform: translateX(100%);
+transition: transform 0.3s ease;
+}
+.admin-dashboard.open {
+transform: translateX(0);
+}
+</style>
+<div class="p-6 border-b">
+<div class="flex justify-between items-center">
+<h2 class="text-xl font-bold">Admin Dashboard</h2>
+<button onclick="closeAdminDashboard()" class="text-gray-600 hover:text-gray-800">
+<i class="ri-close-line text-2xl"></i>
+</button>
+</div>
+</div>
+<div class="p-6">
+<div class="flex space-x-4 mb-6">
+<button onclick="showAddProduct()" class="flex-1 py-2 px-4 rounded-button bg-primary text-white hover:bg-primary/90">Add Product</button>
+<button onclick="showDeleteProduct()" class="flex-1 py-2 px-4 rounded-button bg-gray-200 text-gray-700 hover:bg-gray-300">Delete Product</button>
+</div>
+<div id="addProductSection" class="space-y-4">
+<h3 class="text-lg font-semibold mb-4">Add New Product</h3>
+<form id="addProductForm" class="space-y-4">
+<div>
+<label class="block text-sm font-medium mb-1">Product Name</label>
+<input type="text" name="name" required class="w-full px-4 py-2 border rounded-button focus:outline-none focus:ring-2 focus:ring-primary">
+</div>
+<div>
+<label class="block text-sm font-medium mb-1">Price ($)</label>
+<input type="number" name="price" required min="0" step="0.01" class="w-full px-4 py-2 border rounded-button focus:outline-none focus:ring-2 focus:ring-primary">
+</div>
+<div>
+<label class="block text-sm font-medium mb-1">Product Code</label>
+<input type="text" name="code" required class="w-full px-4 py-2 border rounded-button focus:outline-none focus:ring-2 focus:ring-primary">
+</div>
+<div>
+<label class="block text-sm font-medium mb-1">Specifications</label>
+<textarea name="specs" required class="w-full px-4 py-2 border rounded-button focus:outline-none focus:ring-2 focus:ring-primary h-24"></textarea>
+</div>
+<div>
+<label class="block text-sm font-medium mb-1">Image URL</label>
+<input type="url" name="image" required class="w-full px-4 py-2 border rounded-button focus:outline-none focus:ring-2 focus:ring-primary">
+</div>
+<button type="submit" class="w-full py-2 bg-primary text-white rounded-button hover:bg-primary/90 cursor-pointer">Add Product</button>
+</form>
+</div>
+<div id="deleteProductSection" class="space-y-4 hidden">
+<h3 class="text-lg font-semibold mb-4">Delete Product</h3>
+<form id="deleteProductForm" class="space-y-4">
+<div>
+<label class="block text-sm font-medium mb-1">Product Code</label>
+<input type="text" name="deleteCode" required class="w-full px-4 py-2 border rounded-button focus:outline-none focus:ring-2 focus:ring-primary">
+</div>
+<button type="submit" class="w-full py-2 bg-red-500 text-white rounded-button hover:bg-red-600 cursor-pointer">Delete Product</button>
+</form>
+</div>
+</div>
+</div>
+<div class="admin-overlay"></div>
+<!-- Mobile Tab Bar -->
+<div class="fixed bottom-0 left-0 w-full bg-white shadow-lg border-t border-gray-200 md:hidden z-50">
+<div class="grid grid-cols-5 h-16">
+<a href="#" class="flex flex-col items-center justify-center cursor-pointer">
+<i class="ri-home-5-line text-primary"></i>
+<span class="text-xs mt-1">Home</span>
+</a>
+<a href="#categories" class="flex flex-col items-center justify-center cursor-pointer">
+<i class="ri-apps-line text-gray-600"></i>
+<span class="text-xs mt-1">Categories</span>
+</a>
+<a href="#deals" class="flex flex-col items-center justify-center cursor-pointer">
+<i class="ri-price-tag-3-line text-gray-600"></i>
+<span class="text-xs mt-1">Deals</span>
+</a>
+<a href="#products" class="flex flex-col items-center justify-center cursor-pointer">
+<i class="ri-shopping-bag-line text-gray-600"></i>
+<span class="text-xs mt-1">Products</span>
+</a>
+<a href="https://wa.me/+254710195613" target="_blank" class="flex flex-col items-center justify-center cursor-pointer">
+<i class="ri-whatsapp-line text-green-500"></i>
+<span class="text-xs mt-1">Contact</span>
+</a>
+</div>
+</div>
+<!-- Floating WhatsApp Button (Desktop) -->
+<a href="https://wa.me/0710195613" target="_blank" class="fixed bottom-6 right-6 w-14 h-14 rounded-full bg-green-500 flex items-center justify-center shadow-lg hover:bg-green-600 transition-colors z-40 cursor-pointer hidden md:flex">
+<i class="ri-whatsapp-line text-white text-2xl"></i>
+</a>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+// Admin functionality
+window.openAdminModal = function() {
+document.querySelector('.admin-modal').style.display = 'block';
+document.querySelector('.admin-overlay').style.display = 'block';
+}
+window.closeAdminModal = function() {
+document.querySelector('.admin-modal').style.display = 'none';
+document.querySelector('.admin-overlay').style.display = 'none';
+}
+window.validateAdminLogin = function() {
+const password = document.getElementById('adminPassword').value;
+if(password === 'ALTECH12') {
+closeAdminModal();
+openAdminDashboard();
+document.getElementById('adminPassword').value = '';
+document.body.classList.add('admin-mode');
+} else {
+alert('Invalid password');
+}
+}
+window.openAdminDashboard = function() {
+const dashboard = document.querySelector('.admin-dashboard');
+dashboard.style.display = 'block';
+document.querySelector('.admin-overlay').style.display = 'block';
+setTimeout(() => dashboard.classList.add('open'), 50);
+addDeleteButtons();
+}
+window.closeAdminDashboard = function() {
+const dashboard = document.querySelector('.admin-dashboard');
+dashboard.classList.remove('open');
+setTimeout(() => {
+dashboard.style.display = 'none';
+document.querySelector('.admin-overlay').style.display = 'none';
+}, 300);
+}
+window.showAddProduct = function() {
+document.getElementById('addProductSection').classList.remove('hidden');
+document.getElementById('deleteProductSection').classList.add('hidden');
+}
+window.showDeleteProduct = function() {
+document.getElementById('deleteProductSection').classList.remove('hidden');
+document.getElementById('addProductSection').classList.add('hidden');
+}
+document.getElementById('deleteProductForm').addEventListener('submit', function(e) {
+e.preventDefault();
+const productCode = this.elements.deleteCode.value;
+const products = document.querySelectorAll('.product-card');
+let productFound = false;
+products.forEach(product => {
+if (product.dataset.productCode === productCode) {
+product.style.opacity = '0';
+product.style.transform = 'scale(0.9)';
+setTimeout(() => {
+product.remove();
+}, 200);
+productFound = true;
+}
+});
+if (!productFound) {
+const errorMsg = document.createElement('div');
+errorMsg.className = 'text-red-500 text-sm mt-2';
+errorMsg.textContent = 'Product not found';
+this.appendChild(errorMsg);
+setTimeout(() => errorMsg.remove(), 3000);
+}
+this.reset();
+});
+// Admin functions for managing products
+function addDeleteButtons() {
+const productCards = document.querySelectorAll('.product-card');
+productCards.forEach(card => {
+if (!card.querySelector('.delete-product')) {
+const deleteBtn = document.createElement('button');
+deleteBtn.className = 'delete-product absolute top-2 right-2 w-8 h-8 rounded-full bg-red-500 text-white flex items-center justify-center shadow-lg z-10 opacity-0 transition-opacity duration-200';
+deleteBtn.innerHTML = '<i class="ri-delete-bin-line"></i>';
+deleteBtn.style.pointerEvents = 'auto';
+const productContainer = card.querySelector('.relative');
+if (productContainer) {
+productContainer.appendChild(deleteBtn);
+// Add hover effect
+card.addEventListener('mouseenter', () => {
+if (document.body.classList.contains('admin-mode')) {
+deleteBtn.style.opacity = '1';
+deleteBtn.style.visibility = 'visible';
+}
+});
+card.addEventListener('mouseleave', () => {
+deleteBtn.style.opacity = '0';
+setTimeout(() => {
+if (!deleteBtn.matches(':hover')) {
+deleteBtn.style.visibility = 'hidden';
+}
+}, 200);
+});
+// Add click handler
+deleteBtn.addEventListener('click', function(e) {
+e.preventDefault();
+e.stopPropagation();
+const confirmDialog = document.createElement('div');
+confirmDialog.className = 'fixed inset-0 flex items-center justify-center z-[1000] delete-confirm-dialog';
+confirmDialog.innerHTML = `
+<div class="absolute inset-0 bg-black bg-opacity-50"></div>
+<div class="bg-white rounded-lg p-6 max-w-sm mx-4 relative z-10">
+<h3 class="text-lg font-semibold mb-4">Delete Product</h3>
+<p class="text-gray-600 mb-6">Are you sure you want to delete this product?</p>
+<div class="flex justify-end space-x-3">
+<button class="px-4 py-2 text-gray-600 hover:text-gray-800 cancel-delete">Cancel</button>
+<button class="px-4 py-2 bg-red-500 text-white rounded-button hover:bg-red-600 confirm-delete">Delete</button>
+</div>
+</div>
+`;
+document.body.appendChild(confirmDialog);
+const cancelBtn = confirmDialog.querySelector('.cancel-delete');
+const deleteConfirmBtn = confirmDialog.querySelector('.confirm-delete');
+const overlay = confirmDialog.querySelector('.absolute');
+cancelBtn.addEventListener('click', () => confirmDialog.remove());
+overlay.addEventListener('click', () => confirmDialog.remove());
+deleteConfirmBtn.addEventListener('click', () => {
+card.style.opacity = '0';
+card.style.transform = 'scale(0.9)';
+setTimeout(() => {
+card.remove();
+confirmDialog.remove();
+}, 200);
+});
+});
+}
+}
+});
+}
+function removeDeleteButtons() {
+const deleteButtons = document.querySelectorAll('.delete-product');
+deleteButtons.forEach(button => button.remove());
+}
+// Add product form handling
+document.getElementById('addProductForm').addEventListener('submit', function(e) {
+e.preventDefault();
+const formData = new FormData(this);
+const productData = {
+name: formData.get('name'),
+price: formData.get('price'),
+specs: formData.get('specs'),
+image: formData.get('image'),
+code: formData.get('code')
+};
+// Create new product card
+const productGrid = document.querySelector('#products .grid');
+const newProduct = document.createElement('div');
+newProduct.className = 'product-card bg-white rounded-lg shadow-sm overflow-hidden';
+newProduct.dataset.productCode = productData.code;
+newProduct.innerHTML = `
+<div class="relative h-40 md:h-48">
+<img src="${productData.image}" alt="${productData.name}" class="w-full h-full object-cover">
+</div>
+<div class="p-3 md:p-4">
+<h3 class="font-medium text-sm md:text-base mb-1">${productData.name}</h3>
+<p class="text-gray-600 text-xs md:text-sm mb-2">${productData.specs}</p>
+<div class="flex items-center justify-between mb-2">
+<span class="font-bold text-primary">$${productData.price}</span>
+<div class="flex">
+<i class="ri-star-fill text-yellow-400 text-xs"></i>
+<span class="text-xs text-gray-500 ml-1">New</span>
+</div>
+</div>
+<a href="https://wa.me/0710195613?text=I'm%20interested%20in%20${encodeURIComponent(productData.name)}%20for%20$${productData.price}" target="_blank" class="whatsapp-btn w-full py-1.5 bg-green-500 text-white text-sm rounded-button flex items-center justify-center cursor-pointer">
+<i class="ri-whatsapp-line mr-1"></i>
+<span>Buy Now</span>
+</a>
+</div>
+`;
+productGrid.insertBefore(newProduct, productGrid.firstChild);
+// Reset form and close dashboard
+this.reset();
+closeAdminDashboard();
+});
+// Hero Slider
+const slides = document.querySelectorAll('.hero-slide');
+const dots = document.querySelectorAll('.hero-dot');
+const prevBtn = document.querySelector('.prev-slide');
+const nextBtn = document.querySelector('.next-slide');
+let currentSlide = 0;
+let slideInterval;
+function showSlide(index) {
+slides.forEach((slide, i) => {
+if (i === index) {
+slide.style.transform = 'translateX(0)';
+} else if (i < index) {
+slide.style.transform = 'translateX(-100%)';
+} else {
+slide.style.transform = 'translateX(100%)';
+}
+});
+dots.forEach((dot, i) => {
+if (i === index) {
+dot.classList.add('bg-primary', 'opacity-100');
+dot.classList.remove('opacity-50');
+} else {
+dot.classList.remove('bg-primary', 'opacity-100');
+dot.classList.add('opacity-50');
+}
+});
+currentSlide = index;
+}
+function nextSlide() {
+let nextIndex = currentSlide + 1;
+if (nextIndex >= slides.length) {
+nextIndex = 0;
+}
+showSlide(nextIndex);
+}
+function prevSlide() {
+let prevIndex = currentSlide - 1;
+if (prevIndex < 0) {
+prevIndex = slides.length - 1;
+}
+showSlide(prevIndex);
+}
+function startSlideShow() {
+slideInterval = setInterval(nextSlide, 5000);
+}
+function stopSlideShow() {
+clearInterval(slideInterval);
+}
+// Initialize slider
+showSlide(0);
+startSlideShow();
+// Event listeners for slider controls
+dots.forEach((dot, index) => {
+dot.addEventListener('click', () => {
+stopSlideShow();
+showSlide(index);
+startSlideShow();
+});
+});
+if (prevBtn && nextBtn) {
+prevBtn.addEventListener('click', () => {
+stopSlideShow();
+prevSlide();
+startSlideShow();
+});
+nextBtn.addEventListener('click', () => {
+stopSlideShow();
+nextSlide();
+startSlideShow();
+});
+}
+// Mobile menu toggle
+const mobileMenuBtn = document.querySelector('.mobile-menu-btn');
+const closeMenuBtn = document.querySelector('.close-menu-btn');
+const mobileMenu = document.querySelector('.mobile-menu');
+const menuOverlay = document.querySelector('.menu-overlay');
+if (mobileMenuBtn && closeMenuBtn && mobileMenu && menuOverlay) {
+mobileMenuBtn.addEventListener('click', () => {
+mobileMenu.classList.add('open');
+menuOverlay.classList.remove('hidden');
+document.body.style.overflow = 'hidden';
+});
+closeMenuBtn.addEventListener('click', () => {
+mobileMenu.classList.remove('open');
+menuOverlay.classList.add('hidden');
+document.body.style.overflow = '';
+});
+menuOverlay.addEventListener('click', () => {
+mobileMenu.classList.remove('open');
+menuOverlay.classList.add('hidden');
+document.body.style.overflow = '';
+});
+}
+// Mobile search toggle
+const searchToggle = document.querySelector('.search-toggle');
+const mobileSearch = document.querySelector('.mobile-search');
+if (searchToggle && mobileSearch) {
+searchToggle.addEventListener('click', () => {
+mobileSearch.classList.toggle('hidden');
+});
+}
+// Product card hover effect
+const productCards = document.querySelectorAll('.product-card');
+productCards.forEach(card => {
+card.addEventListener('mouseenter', () => {
+card.classList.add('shadow-md');
+});
+card.addEventListener('mouseleave', () => {
+card.classList.remove('shadow-md');
+});
+});
+// Smooth scroll for anchor links
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+anchor.addEventListener('click', function(e) {
+e.preventDefault();
+const targetId = this.getAttribute('href');
+if (targetId === '#') return;
+const targetElement = document.querySelector(targetId);
+if (targetElement) {
+const headerOffset = 80;
+const elementPosition = targetElement.getBoundingClientRect().top;
+const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+window.scrollTo({
+top: offsetPosition,
+behavior: 'smooth'
+});
+// Close mobile menu if open
+if (mobileMenu && mobileMenu.classList.contains('open')) {
+mobileMenu.classList.remove('open');
+menuOverlay.classList.add('hidden');
+document.body.style.overflow = '';
+}
+}
+});
+});
+});
+// Add admin button to footer
+const footerSocials = document.querySelector('.flex.space-x-4');
+const adminButton = document.createElement('a');
+adminButton.className = 'w-8 h-8 rounded-full bg-gray-800 flex items-center justify-center hover:bg-primary transition-colors cursor-pointer';
+adminButton.innerHTML = '<i class="ri-admin-line"></i>';
+adminButton.onclick = openAdminModal;
+footerSocials.appendChild(adminButton);
+</script>
+</body>
+</html>
